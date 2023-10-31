@@ -23,7 +23,7 @@ pub enum OperPrec {
 }
 
 impl Token {
-    pub fn get_oper_prec(self) -> OperPrec {
+    pub fn get_oper_prec(&self) -> OperPrec {
         use self::Token::*;
         use self::OperPrec::*;
         match self {

@@ -1,3 +1,5 @@
+use std::fmt;
+
 use super::{tokens::{Token, OperPrec}, lexer::Lexer, ast::Node};
 
 pub struct Parser<'a> {
@@ -16,9 +18,12 @@ impl<'a> Parser<'a> {
         Ok(Parser { lexer, curr_token: cur_token })
     }
 
-    pub fn parse(&mut self) -> Result<Self, ParseError> {
+    pub fn parse(&mut self) -> Result<Node, ParseError> {
         let ast = self.generate_ast(OperPrec::DefaultZero);
-        ast
+        match ast {
+            Ok(ast) => Ok(ast),
+            Err(e) => Err(e),
+        }
     }
 
     fn get_next_token(&mut self) -> Result<(), ParseError> {
@@ -144,4 +149,13 @@ impl<'a> Parser<'a> {
 pub enum ParseError {
     UnableToParse(String),
     InvalidOperator(String),   
+}
+
+impl fmt::Display for ParseError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match &self {
+            self::ParseError::UnableToParse(e) => write!(f, "Error in evaluating {}", e),
+            self::ParseError::InvalidOperator(e) => write!(f, "Error in evaluating {}", e),
+        } 
+    }
 }

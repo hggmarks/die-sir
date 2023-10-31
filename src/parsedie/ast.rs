@@ -16,7 +16,7 @@ pub enum Node {
 }
 
 #[derive(Clone, Debug, PartialEq)]
-enum EvalResult {
+pub enum EvalResult {
     Number(f64),
     DieResult(Vec<i128>),
 }
@@ -65,7 +65,7 @@ pub fn eval(expr: Node) -> Result<EvalResult, Box<dyn error::Error>> {
         Node::Divide(expr1, expr2) => {
             
             let lhs = eval(*expr1)?;
-            let rhs = eval(*expr1)?;
+            let rhs = eval(*expr2)?;
 
             match (lhs, rhs) {
                 (EvalResult::Number(num1), EvalResult::Number(num2)) => {
