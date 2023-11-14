@@ -26,8 +26,8 @@ pub enum EvalResult {
 impl std::fmt::Display for EvalResult {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match &self {
-            self::EvalResult::Number(e) => write!(f, "Error in evaluating {}", e),
-            self::EvalResult::DieResult(e) => write!(f, "Error in evaluating {:?}", e),
+            self::EvalResult::Number(e) => write!(f, "{}", e),
+            self::EvalResult::DieResult(e) => write!(f, "{:?}", e),
         } 
     }
 }
