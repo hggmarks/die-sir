@@ -15,10 +15,21 @@ pub enum Node {
     Number(i128),
 }
 
+
 #[derive(Clone, Debug, PartialEq)]
 pub enum EvalResult {
     Number(f64),
     DieResult(Vec<i128>),
+}
+
+
+impl std::fmt::Display for EvalResult {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        match &self {
+            self::EvalResult::Number(e) => write!(f, "Error in evaluating {}", e),
+            self::EvalResult::DieResult(e) => write!(f, "Error in evaluating {:?}", e),
+        } 
+    }
 }
 
 
