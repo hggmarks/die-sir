@@ -36,6 +36,7 @@ impl<'a> Iterator for Lexer<'a> {
             Some('+') => Some(Token::Add),
             Some('-') => Some(Token::Subtract),
             Some('*') => Some(Token::Multiply),
+            Some('/') => Some(Token::Divide),
             Some('^') => Some(Token::Caret),
             Some('(') => Some(Token::LeftParen),
             Some(')') => Some(Token::RightParen),
