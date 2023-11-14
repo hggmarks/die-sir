@@ -1,5 +1,5 @@
 use std::iter::Peekable;
-use std::str::Chars;use
+use std::str::Chars;
 
 use super::tokens::Token;
 
