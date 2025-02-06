@@ -1,6 +1,6 @@
 use rand::Rng;
 use rand::rngs::OsRng;
-use std::error;
+use std::{error, i128};
 
 
 #[derive(Clone, Debug, PartialEq)]
@@ -16,31 +16,34 @@ pub enum Node {
 }
 
 #[derive(Debug)]
-pub struct Die {
-    result: i128,
+pub struct EvalResult {
+    result: f64,
     dice: Vec<i128>,
 }
 
-impl Die {
-    pub fn new (self, rolls: Vec<i128>) -> Self {
-        Die { result: (rolls.iter().sum()), dice: (rolls) }
+impl EvalResult {
+    pub fn new_by_dice_ (rolls: Vec<i128>) -> Self {
+        let sum: i128 = rolls.iter().sum();
+        EvalResult { result: (sum as f64), dice: (rolls) }
     }
-    
+
+    pub fn new_by_number (value: f64) -> Self {
+        EvalResult { result: (value), dice: (vec![0]) }
+    }
 }
 
 
 #[derive(Clone, Debug, PartialEq)]
-pub enum EvalResult {
+pub enum EvalResultt {
     Number(f64),
-    DieResult(Vec<i128>),
 }
 
 
-impl std::fmt::Display for EvalResult {
+impl std::fmt::Display for EvalResultt {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match &self {
-            self::EvalResult::Number(e) => write!(f, "{}", e),
-            self::EvalResult::DieResult(e) => write!(f, "{:?}", e),
+            self::EvalResultt::Number(e) => write!(f, "{}", e),
+           //self::EvalResult::DieResult(e) => write!(f, "{:?}", e),
         } 
     }
 }
@@ -127,14 +130,14 @@ pub fn eval(expr: Node) -> Result<EvalResult, Box<dyn error::Error>> {
 
             if let (EvalResult::Number(num_rows), EvalResult::Number(num_sides)) = (num_rows, num_sides) {
                 if num_rows == 0.0 || num_sides == 0.0 {
-                    return Ok(EvalResult::DieResult(vec![0]));
+                    return Ok(EvalResult::Number(0.0));
                 }
 
                 for _ in 0..(num_rows as i128) {
                     results.push(rng.gen_range(1..=(num_sides as i128)));
                 }
 
-                Ok(EvalResult::DieResult(results))
+                Ok(EvalResult::Number(Die::new(results).result as f64))
             } else {
                 Err("Die expressions must have numeric operands".into())
             }
