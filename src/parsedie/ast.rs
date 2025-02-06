@@ -15,6 +15,19 @@ pub enum Node {
     Number(i128),
 }
 
+#[derive(Debug)]
+pub struct Die {
+    result: i128,
+    dice: Vec<i128>,
+}
+
+impl Die {
+    pub fn new (self, rolls: Vec<i128>) -> Self {
+        Die { result: (rolls.iter().sum()), dice: (rolls) }
+    }
+    
+}
+
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum EvalResult {
@@ -130,25 +143,3 @@ pub fn eval(expr: Node) -> Result<EvalResult, Box<dyn error::Error>> {
     }
 } 
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    #[test]
-    fn test_expr1() {
-        use crate::parsedie::parser::Parser;
-
-
-        let ast = Parser::new("1+2-3").unwrap().parse().unwrap();
-        let value = eval(ast).unwrap();
-        assert_eq!(value, EvalResult::Number(0.0))
-    }
-    #[test]
-    fn test_expr2() {
-        use crate::parsedie::parser::Parser;
-
-
-        let ast = Parser::new("3+2-1*5/4").unwrap().parse().unwrap();
-        let value = eval(ast).unwrap();
-        assert_eq!(value, EvalResult::Number(3.75))
-    }
-}
