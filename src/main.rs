@@ -27,8 +27,9 @@ fn main() {
         match io::stdin().read_line(&mut input) {
             Ok(_) => {
                 match evaluate(input) {
-                    Ok(val) => println!("The computed number is {}\n", val),
-                    Err(_) => {
+                    Ok(val) => println!("{}\n", val),
+                    Err(err) => {
+                        println!("{}", err);
                         println!("Error in evaluating expression. Please enter a valid expression\n");
                     }
                 };

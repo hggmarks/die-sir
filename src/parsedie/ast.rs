@@ -22,7 +22,7 @@ pub struct EvalResult {
 }
 
 impl EvalResult {
-    pub fn new_by_dice_ (rolls: Vec<i128>) -> Self {
+    pub fn new_by_dice (rolls: Vec<i128>) -> Self {
         let sum: i128 = rolls.iter().sum();
         EvalResult { result: (sum as f64), dice: (rolls) }
     }
@@ -32,37 +32,30 @@ impl EvalResult {
     }
 }
 
-
-#[derive(Clone, Debug, PartialEq)]
-pub enum EvalResultt {
-    Number(f64),
-}
-
-
-impl std::fmt::Display for EvalResultt {
+impl std::fmt::Display for EvalResult {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        match &self {
-            self::EvalResultt::Number(e) => write!(f, "{}", e),
-           //self::EvalResult::DieResult(e) => write!(f, "{:?}", e),
-        } 
+        writeln!(f, "Result: {}", self.result)?;
+
+        if !self.dice.is_empty() && self.dice[0] != 0 {
+            writeln!(f, "Dice rolls: {:?}", self.dice)
+        } else {
+            Ok(())
+        }
     }
 }
 
-
 pub fn eval(expr: Node) -> Result<EvalResult, Box<dyn error::Error>> {
     match expr {
-        Node::Number(i) => Ok(EvalResult::Number(i as f64)),
+        Node::Number(i) => Ok(EvalResult::new_by_number(i as f64)),
         Node::Add(expr1, expr2) => {
 
             let lhs = eval(*expr1)?;
             let rhs = eval(*expr2)?;
             
-            match (lhs, rhs) {
-                (EvalResult::Number(num1), EvalResult::Number(num2)) => {
-                    Ok(EvalResult::Number(num1 + num2))
+            match (lhs.result,rhs.result) {
+                (num1, num2) => {
+                    Ok(EvalResult::new_by_number(num1 + num2))
                 }
-                _ => Err("Cannot Add DieResult to Number".into()),
-
             }
         }
         Node::Subtract(expr1, expr2) => {
@@ -70,11 +63,10 @@ pub fn eval(expr: Node) -> Result<EvalResult, Box<dyn error::Error>> {
             let lhs = eval(*expr1)?;
             let rhs = eval(*expr2)?;
             
-            match (lhs, rhs) {
-                (EvalResult::Number(num1), EvalResult::Number(num2)) => {
-                    Ok(EvalResult::Number(num1 - num2))
+            match (lhs.result, rhs.result) {
+                (num1, num2) => {
+                    Ok(EvalResult::new_by_number(num1 - num2))
                 }
-                _ => Err("Cannot Subtract DieResult to Number".into()),
             }
         }
         Node::Multiply(expr1, expr2) => {
@@ -82,11 +74,10 @@ pub fn eval(expr: Node) -> Result<EvalResult, Box<dyn error::Error>> {
             let lhs = eval(*expr1)?;
             let rhs = eval(*expr2)?;
             
-            match (lhs, rhs) {
-                (EvalResult::Number(num1), EvalResult::Number(num2)) => {
-                    Ok(EvalResult::Number(num1 * num2))
+            match (lhs.result, rhs.result) {
+                (num1, num2) => {
+                    Ok(EvalResult::new_by_number(num1 * num2))
                 }
-                _ => Err("Cannot Multiply DieResult by Number".into()),
             }
         }
         Node::Divide(expr1, expr2) => {
@@ -94,32 +85,29 @@ pub fn eval(expr: Node) -> Result<EvalResult, Box<dyn error::Error>> {
             let lhs = eval(*expr1)?;
             let rhs = eval(*expr2)?;
 
-            match (lhs, rhs) {
-                (EvalResult::Number(num1), EvalResult::Number(num2)) => {
-                    Ok(EvalResult::Number(num1 / num2))
+            match (lhs.result, rhs.result) {
+                (num1, num2) => {
+                    Ok(EvalResult::new_by_number(num1 / num2))
                 }
-                _ => Err("Cannot Divide DieResult by Number".into())
             }
         },
         Node::Negative(expr1) => {
             let value = eval(*expr1)?;
 
-            match value {
-                EvalResult::Number(val) => {
-                    Ok(EvalResult::Number(-val))
+            match value.result {
+                val => {
+                    Ok(EvalResult::new_by_number(-val))
                 }
-                _ => Err("DieResult cannot be negative".into())
             }
         }
         Node::Caret(expr1, expr2) => {
             let lhs = eval(*expr1)?;
             let rhs = eval(*expr2)?;
 
-            match (lhs, rhs) {
-                (EvalResult::Number(num1), EvalResult::Number(num2)) => {
-                    Ok(EvalResult::Number(num1.powf(num2)))
+            match (lhs.result, rhs.result) {
+                (num1, num2) => {
+                    Ok(EvalResult::new_by_number(num1.powf(num2)))
                 }
-                _ => Err("Cannot use DieResult in power operation".into())
             }
         }
         Node::Die(expr1, expr2) => {
@@ -128,20 +116,16 @@ pub fn eval(expr: Node) -> Result<EvalResult, Box<dyn error::Error>> {
             let mut results: Vec<i128> = Vec::new();
             let mut rng = OsRng;
 
-            if let (EvalResult::Number(num_rows), EvalResult::Number(num_sides)) = (num_rows, num_sides) {
-                if num_rows == 0.0 || num_sides == 0.0 {
-                    return Ok(EvalResult::Number(0.0));
-                }
-
-                for _ in 0..(num_rows as i128) {
-                    results.push(rng.gen_range(1..=(num_sides as i128)));
-                }
-
-                Ok(EvalResult::Number(Die::new(results).result as f64))
-            } else {
-                Err("Die expressions must have numeric operands".into())
+            if num_rows.result == 0.0 || num_sides.result == 0.0 {
+                return Ok(EvalResult::new_by_dice(vec![0]));
             }
-            
+
+            for _ in 0..(num_rows.result as i128) {
+                results.push(rng.gen_range(1..=(num_sides.result as i128)));
+            }
+
+            Ok(EvalResult::new_by_dice(results))
+
         }   
     }
 } 

@@ -9,7 +9,7 @@ pub enum Token {
     RightParen,
     Num(i128),
     Die,
-    EOF
+    EOF,
 }
 
 #[derive(Debug, PartialEq, PartialOrd)]

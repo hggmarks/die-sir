@@ -46,3 +46,38 @@ impl<'a> Iterator for Lexer<'a> {
         }
     }
 }
+
+/*
+fn next(&mut self) -> Result<Token, ParseError> {
+    let next_char = self.expr.next();
+    match next_char {
+        Some('0'..='9') => {
+            let mut number = next_char.unwrap().to_string();
+
+            while let Some(&next_char) = self.expr.peek() {
+                if next_char.is_numeric() {
+                    number.push(self.expr.next().unwrap());
+                } else if next_char == '(' {
+                    return Err(ParseError::UnexpectedCharacter(next_char));
+                } else {
+                    break;
+                }
+            }
+            number.parse::<i128>()
+                .map(Token::Num)
+                .map_err(|_| ParseError::InvalidNumber)
+        },
+        Some('+') => Ok(Token::Add),
+        Some('-') => Ok(Token::Subtract),
+        Some('*') => Ok(Token::Multiply),
+        Some('/') => Ok(Token::Divide),
+        Some('^') => Ok(Token::Caret),
+        Some('(') => Ok(Token::LeftParen),
+        Some(')') => Ok(Token::RightParen),
+        Some('d') => Ok(Token::Die),
+        None => Ok(Token::EOF),
+        Some(c) => Err(ParseError::UnexpectedCharacter(c)),
+    }
+}
+
+*/
