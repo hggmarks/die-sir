@@ -1,11 +1,13 @@
 use std::io;
 
-use parsedie::{ast::EvalResult, parser::{ParseError, Parser}};
+use parsedie::{
+    ast::EvalResult,
+    parser::{ParseError, Parser},
+};
 
 use crate::parsedie::ast;
 
 mod parsedie;
-
 
 fn evaluate(expr: String) -> Result<EvalResult, ParseError> {
     let expr = expr.split_whitespace().collect::<String>();
@@ -15,9 +17,7 @@ fn evaluate(expr: String) -> Result<EvalResult, ParseError> {
     println!("The generated AST is {:?}", ast);
 
     Ok(ast::eval(ast)?)
-
 }
-
 
 fn main() {
     println!("Hello, world!");
@@ -28,18 +28,12 @@ fn main() {
             Ok(_) => {
                 match evaluate(input) {
                     Ok(val) => println!("The computed number is {}\n", val),
-                    Err(_) => {
-                        println!("Error in evaluating expression. Please enter a valid expression\n");
+                    Err(e) => {
+                        println!("Error: {}\n", e);
                     }
                 };
             }
-            Err(error) => println!("Error: {}", error),
+            Err(error) => println!("Error reading input: {}\n", error),
         }
     }
 }
-
-
-
-
-
-
