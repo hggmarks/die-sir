@@ -1,7 +1,14 @@
 use std::iter::Peekable;
 use std::str::Chars;
+use std::num::ParseIntError;
 
 use super::tokens::Token;
+
+#[derive(Debug)]
+pub enum LexerError {
+    ParseIntError(ParseIntError),
+    InvalidCharacter(char),
+}
 
 pub struct Lexer<'a> {
     expr: Peekable<Chars<'a>>
@@ -14,9 +21,9 @@ impl<'a> Lexer<'a> {
 }
 
 impl<'a> Iterator for Lexer<'a> {
-    type Item = Token;
+    type Item = Result<Token, LexerError>;
 
-    fn next(&mut self) -> Option<Token> {
+    fn next(&mut self) -> Option<Result<Token, LexerError>> {
         let next_char = self.expr.next();
         match next_char {
             Some('0'..='9') => {
@@ -31,18 +38,20 @@ impl<'a> Iterator for Lexer<'a> {
                         break;
                     }
                 }
-                Some(Token::Num(number.parse::<i128>().unwrap()))
+                Some(number.parse::<i128>()
+                    .map(Token::Num)
+                    .map_err(LexerError::ParseIntError))
             },
-            Some('+') => Some(Token::Add),
-            Some('-') => Some(Token::Subtract),
-            Some('*') => Some(Token::Multiply),
-            Some('/') => Some(Token::Divide),
-            Some('^') => Some(Token::Caret),
-            Some('(') => Some(Token::LeftParen),
-            Some(')') => Some(Token::RightParen),
-            Some('d') => Some(Token::Die),
-            None => Some(Token::EOF),
-            Some(_) => None,
+            Some('+') => Some(Ok(Token::Add)),
+            Some('-') => Some(Ok(Token::Subtract)),
+            Some('*') => Some(Ok(Token::Multiply)),
+            Some('/') => Some(Ok(Token::Divide)),
+            Some('^') => Some(Ok(Token::Caret)),
+            Some('(') => Some(Ok(Token::LeftParen)),
+            Some(')') => Some(Ok(Token::RightParen)),
+            Some('d') => Some(Ok(Token::Die)),
+            None => Some(Ok(Token::EOF)),
+            Some(c) => Some(Err(LexerError::InvalidCharacter(c))),
         }
     }
 }

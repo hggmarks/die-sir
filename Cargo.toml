@@ -2,6 +2,20 @@
 name = "die-sir"
 version = "0.1.0"
 edition = "2021"
+authors = ["Hugostoso <hggmarks@gmail.com>"]
+description = "A dice expression parser and evaluator"
+license = "MIT"
+repository = "https://github.com/hggmarks/die-sir"
+keywords = ["dice", "parser", "rpg"]
+categories = ["parsing", "games"]
+
+[lib]
+name = "die_sir"
+path = "src/lib.rs"
+
+[[example]]
+name = "basic_usage"
+path = "examples/basic_usage.rs"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

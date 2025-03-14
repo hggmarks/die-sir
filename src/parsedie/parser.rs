@@ -1,6 +1,6 @@
 use std::fmt;
 
-use super::{tokens::{Token, OperPrec}, lexer::Lexer, ast::Node};
+use super::{tokens::{Token, OperPrec}, lexer::{Lexer, LexerError}, ast::Node};
 
 pub struct Parser<'a> {
     lexer: Lexer<'a>,
@@ -11,7 +11,8 @@ impl<'a> Parser<'a> {
     pub fn new(expr: &'a str) -> Result<Self, ParseError> {
         let mut lexer = Lexer::new(expr);
         let cur_token = match lexer.next() {
-            Some(token) => token, 
+            Some(Ok(token)) => token,
+            Some(Err(e)) => return Err(ParseError::from(e)),
             None => return Err(ParseError::InvalidOperator(
                 "Invalid Character".into())),
         };
@@ -28,7 +29,8 @@ impl<'a> Parser<'a> {
 
     fn get_next_token(&mut self) -> Result<(), ParseError> {
         let next_token = match self.lexer.next() {
-            Some(token) => token,
+            Some(Ok(token)) => token,
+            Some(Err(e)) => return Err(ParseError::from(e)),
             None => return Err(ParseError::InvalidOperator(
                 "Invalid character".into())),
         };
@@ -148,20 +150,33 @@ impl<'a> Parser<'a> {
 #[derive(Debug)]
 pub enum ParseError {
     UnableToParse(String),
-    InvalidOperator(String),   
+    InvalidOperator(String),
+    NumberOverflow(String),
 }
 
 impl fmt::Display for ParseError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match &self {
-            self::ParseError::UnableToParse(e) => write!(f, "Error in evaluating {}", e),
-            self::ParseError::InvalidOperator(e) => write!(f, "Error in evaluating {}", e),
-        } 
+        match self {
+            ParseError::UnableToParse(msg) => write!(f, "Unable to parse: {}", msg),
+            ParseError::InvalidOperator(msg) => write!(f, "Invalid operator: {}", msg),
+            ParseError::NumberOverflow(msg) => write!(f, "Number overflow: {}", msg),
+        }
     }
 }
 
-impl std::convert::From<std::boxed::Box<dyn std::error::Error>> for ParseError {
-    fn from(_evalerr: std::boxed::Box<dyn std::error::Error>) -> Self {
-        return ParseError::UnableToParse("Unable to parse".into()); 
+impl From<LexerError> for ParseError {
+    fn from(error: LexerError) -> Self {
+        match error {
+            LexerError::ParseIntError(e) => ParseError::NumberOverflow(format!("Number is too large: {}", e)),
+            LexerError::InvalidCharacter(c) => ParseError::InvalidOperator(format!("Invalid character: {}", c)),
+        }
     }
 }
+
+impl From<Box<dyn std::error::Error>> for ParseError {
+    fn from(error: Box<dyn std::error::Error>) -> Self {
+        ParseError::UnableToParse(error.to_string())
+    }
+}
+
+impl std::error::Error for ParseError {}
