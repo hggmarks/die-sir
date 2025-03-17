@@ -17,7 +17,6 @@ path = "src/lib.rs"
 name = "basic_usage"
 path = "examples/basic_usage.rs"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
 rand = "0.8"

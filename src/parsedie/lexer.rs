@@ -1,6 +1,6 @@
 use std::iter::Peekable;
-use std::str::Chars;
 use std::num::ParseIntError;
+use std::str::Chars;
 
 use super::tokens::Token;
 
@@ -10,29 +10,46 @@ pub enum LexerError {
     InvalidCharacter(char),
 }
 
-pub struct Lexer<'a> {
-    expr: Peekable<Chars<'a>>
+pub struct Lexer {
+    current_expr: String,
+    position: usize,
 }
 
-impl<'a> Lexer<'a> {
-    pub fn new(new_expr: &'a str) -> Self {
-        Lexer { expr: new_expr.chars().peekable() }
+impl Lexer {
+    pub fn new() -> Self {
+        Lexer {
+            current_expr: String::new(),
+            position: 0,
+        }
+    }
+
+    pub fn set_expression(&mut self, new_expr: &str) {
+        self.current_expr = new_expr.to_string();
+        self.position = 0;
     }
 }
 
-impl<'a> Iterator for Lexer<'a> {
+impl Iterator for Lexer {
     type Item = Result<Token, LexerError>;
 
-    fn next(&mut self) -> Option<Result<Token, LexerError>> {
-        let next_char = self.expr.next();
-        match next_char {
-            Some('0'..='9') => {
-                let mut number = next_char?.to_string();
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.position >= self.current_expr.len() {
+            return Some(Ok(Token::EOF));
+        }
 
-                while let Some(next_char) = self.expr.peek() {
-                    if next_char.is_numeric() {
-                        number.push(self.expr.next()?);
-                    } else if next_char == &'(' {
+        let chars: Vec<char> = self.current_expr.chars().collect();
+        let next_char = chars[self.position];
+        self.position += 1;
+
+        match next_char {
+            '0'..='9' => {
+                let mut number = next_char.to_string();
+                while self.position < chars.len() {
+                    let peek_char = chars[self.position];
+                    if peek_char.is_numeric() {
+                        number.push(peek_char);
+                        self.position += 1;
+                    } else if peek_char == '(' {
                         return None;
                     } else {
                         break;
@@ -42,16 +59,15 @@ impl<'a> Iterator for Lexer<'a> {
                     .map(Token::Num)
                     .map_err(LexerError::ParseIntError))
             },
-            Some('+') => Some(Ok(Token::Add)),
-            Some('-') => Some(Ok(Token::Subtract)),
-            Some('*') => Some(Ok(Token::Multiply)),
-            Some('/') => Some(Ok(Token::Divide)),
-            Some('^') => Some(Ok(Token::Caret)),
-            Some('(') => Some(Ok(Token::LeftParen)),
-            Some(')') => Some(Ok(Token::RightParen)),
-            Some('d') => Some(Ok(Token::Die)),
-            None => Some(Ok(Token::EOF)),
-            Some(c) => Some(Err(LexerError::InvalidCharacter(c))),
+            '+' => Some(Ok(Token::Add)),
+            '-' => Some(Ok(Token::Subtract)),
+            '*' => Some(Ok(Token::Multiply)),
+            '/' => Some(Ok(Token::Divide)),
+            '^' => Some(Ok(Token::Caret)),
+            '(' => Some(Ok(Token::LeftParen)),
+            ')' => Some(Ok(Token::RightParen)),
+            'd' => Some(Ok(Token::Die)),
+            c => Some(Err(LexerError::InvalidCharacter(c))),
         }
     }
 }

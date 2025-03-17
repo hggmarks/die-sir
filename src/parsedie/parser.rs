@@ -2,24 +2,33 @@ use std::fmt;
 
 use super::{tokens::{Token, OperPrec}, lexer::{Lexer, LexerError}, ast::Node};
 
-pub struct Parser<'a> {
-    lexer: Lexer<'a>,
+pub struct Parser {
+    lexer: Lexer,
     curr_token: Token,
 }
 
-impl<'a> Parser<'a> {
-    pub fn new(expr: &'a str) -> Result<Self, ParseError> {
-        let mut lexer = Lexer::new(expr);
-        let cur_token = match lexer.next() {
-            Some(Ok(token)) => token,
-            Some(Err(e)) => return Err(ParseError::from(e)),
-            None => return Err(ParseError::InvalidOperator(
-                "Invalid Character".into())),
-        };
-        Ok(Parser { lexer, curr_token: cur_token })
+impl Parser {
+    pub fn new() -> Self {
+        let mut lexer = Lexer::new();
+        Parser { 
+            lexer,
+            curr_token: Token::EOF, // Initial token
+        }
     }
 
-    pub fn parse(&mut self) -> Result<Node, ParseError> {
+    /// Parse a new expression using the same Parser instance
+    pub fn parse(&mut self, expr: &str) -> Result<Node, ParseError> {
+        // Reset lexer with new expression
+        self.lexer.set_expression(expr);
+        
+        // Get first token
+        self.curr_token = match self.lexer.next() {
+            Some(Ok(token)) => token,
+            Some(Err(e)) => return Err(ParseError::from(e)),
+            None => return Err(ParseError::InvalidOperator("Invalid Character".into())),
+        };
+
+        // Parse the expression
         let ast = self.generate_ast(OperPrec::DefaultZero);
         match ast {
             Ok(ast) => Ok(ast),
